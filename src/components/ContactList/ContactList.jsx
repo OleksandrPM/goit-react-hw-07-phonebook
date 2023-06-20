@@ -1,60 +1,63 @@
+import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { deleteAll } from 'redux/contacts/contactsSlice';
-import { getContacts } from 'redux/contacts/selectors';
-import { getFilter } from 'redux/filter/selectors';
+import {
+  selectContacts,
+  selectFilteredContacts,
+} from 'redux/contacts/contactsSelectors';
+import { fetchContacts } from 'redux/contacts/contactsOperations';
+// import { deleteAll} from 'redux/contacts/contactsOperations';
 import Contact from './Contact';
 import css from './ContactList.module.css';
 
+const downloadingMsg = 'Contacts are loading...';
+const errorMsg = 'Ups... Something goes wrong: ';
+const noContactsMsg = 'There are no contacts in contact list';
+const noContactsByRequestMsg = 'No contacts were found for your request';
+
 export default function ContactList() {
-  const contacts = useSelector(getContacts);
-  const filter = useSelector(getFilter);
+  const { items, isLoading, error } = useSelector(selectContacts);
+  const contacts = useSelector(selectFilteredContacts);
   const dispatch = useDispatch();
 
-  const renderingContacts = filterContacts(contacts, filter);
+  useEffect(() => {
+    dispatch(fetchContacts());
+  }, [dispatch]);
 
-  const sendDeleteAll = () => {
-    dispatch(deleteAll());
-  };
+  // const sendDeleteAll = () => {
+  //   dispatch(deleteAll(items));
+  // };
 
   return (
     <>
-      {contacts.length > 0 ? (
-        renderingContacts.length > 0 ? (
+      {isLoading && <p>{downloadingMsg}</p>}
+      {error && <p>{`${errorMsg}${error}`}</p>}
+      {items.length > 0 ? (
+        contacts.length > 0 ? (
           <>
             <ul className={css.contact_list}>
-              {renderingContacts.map(contact => {
-                const { id, name, number } = contact;
+              {contacts.map(contact => {
+                const { id, name, phone } = contact;
                 return (
                   <li className={css.contact_item} key={id}>
-                    <Contact name={name} number={number} id={id} />
+                    <Contact name={name} number={phone} id={id} />
                   </li>
                 );
               })}
             </ul>
-            <button
+            {/* <button
               type="button"
               onClick={sendDeleteAll}
               className={css.delete_all_btn}
             >
               Delete all contacts
-            </button>
+            </button> */}
           </>
         ) : (
-          <p>No contacts were found for your request</p>
+          <p>{noContactsByRequestMsg}</p>
         )
       ) : (
-        <p>There are no contacts in contact list</p>
+        !isLoading && <p>{noContactsMsg}</p>
       )}
     </>
   );
-}
-
-function filterContacts(contacts, filter) {
-  if (filter === '') {
-    return contacts;
-  } else {
-    return contacts.filter(contact =>
-      contact['name'].toLowerCase().includes(filter)
-    );
-  }
 }

@@ -1,28 +1,25 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getContacts } from 'redux/contacts/selectors';
-import { addContact } from 'redux/contacts/contactsSlice';
+import { selectItems } from 'redux/contacts/contactsSelectors';
 import css from './ContactForm.module.css';
+import { addContact } from 'redux/contacts/contactsOperations';
 
 export default function ContactForm() {
   const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-
-  const contacts = useSelector(getContacts);
+  const [phone, setNumber] = useState('');
+  const items = useSelector(selectItems);
   const dispatch = useDispatch();
 
   const onFormBtnClick = event => {
     event.preventDefault();
     const form = event.currentTarget;
-    setName(form.elements.name.value.trim());
-    setNumber(form.elements.number.value.trim());
     sendAddContact();
     form.reset();
   };
 
   const sendAddContact = () => {
-    if (!isContactPresent(name, number, contacts)) {
-      dispatch(addContact(name, number));
+    if (!isContactPresent(name, phone, items)) {
+      dispatch(addContact({ name, phone }));
     } else {
       alert(`${name} is already in the contacts`);
     }
@@ -69,12 +66,11 @@ export default function ContactForm() {
   );
 }
 
-function isContactPresent(name, number, contacts) {
-  if (contacts.length > 0) {
-    return contacts.find(
-      contact =>
-        contact.name.toLowerCase() === name.toLowerCase() &&
-        contact.number === number
+function isContactPresent(name, number, items) {
+  if (items.length > 0) {
+    return items.find(
+      item =>
+        item.name.toLowerCase() === name.toLowerCase() && item.phone === number
     );
   } else {
     return false;

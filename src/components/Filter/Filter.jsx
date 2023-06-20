@@ -1,10 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { setFilter } from 'redux/filter/filterSlice';
-import { getFilter } from 'redux/filter/selectors';
+import { selectFilter } from 'redux/filter/filterSelectors';
+import { selectItems } from 'redux/contacts/contactsSelectors';
 import css from './Filter.module.css';
 
 export default function Filter() {
-  const filter = useSelector(getFilter);
+  const filter = useSelector(selectFilter);
+  const items = useSelector(selectItems);
 
   const dispatch = useDispatch();
 
@@ -17,14 +19,16 @@ export default function Filter() {
   };
 
   return (
-    <div className={css.filter}>
-      <p>Find contacts by name</p>
-      <input
-        type="text"
-        value={filter}
-        onChange={onChange}
-        className={css.filter__input}
-      ></input>
-    </div>
+    items.length > 0 && (
+      <div className={css.filter}>
+        <p>Find contacts by name</p>
+        <input
+          type="text"
+          value={filter}
+          onChange={onChange}
+          className={css.filter__input}
+        ></input>
+      </div>
+    )
   );
 }
